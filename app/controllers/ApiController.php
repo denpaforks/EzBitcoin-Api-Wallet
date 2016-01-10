@@ -671,7 +671,7 @@ class ApiController extends BaseController {
 		  $addresses[] = $input_raw_tx['vout'][$input['vout']]['scriptPubKey']['addresses'][0];
 		}
 
-		if( count($address_from) > 1 ) {
+		if( count($addresses) > 1 ) {
 			$address_from = implode(',', $address_from);
 		} else {
 			$address_from = $addresses[0];
