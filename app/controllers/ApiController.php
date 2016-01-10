@@ -660,11 +660,28 @@ class ApiController extends BaseController {
 
 		$transaction_details = $tx_info["details"];
 
+		/* Get input addresses */
+		$addresses = array();
+		$raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $tx_id ) );
+		$raw_tx = json_decode($raw_tx, true);
+
+		foreach($raw_tx['vin'] as $input) {
+		  $input_raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $input['txid']) );
+		  $input_raw_tx = json_decode($input_raw_tx, true);
+		  $addresses[] = $input_raw_tx['vout'][$input['vout']]['scriptPubKey']['addresses'][0];
+		}
+
+		if( count($address_from) > 1 ) {
+			$address_from = implode(',', $address_from);
+		} else {
+			$address_from = $addresses[0];
+		}
+
 		foreach ($transaction_details as $tx)
 		{
 			$to_address    = $tx['address']; // address where transaction was sent to. from address may be multiple inputs which means many addresses
 			$account_name  = $tx['account'];
-			$address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction
+			//$address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
@@ -1218,6 +1235,7 @@ class ApiController extends BaseController {
 		 * mind the secret here, that app has to verify that it is coming from the API server not somebody else */
 		$queryString = http_build_query([
 			'value'                  => $satoshi_amount,
+			'address_from'           => $common_data['address_from'],
 			'input_address'          => $common_data['address_to'],
 			'confirmations'          => $common_data['confirmations'],
 			'input_transaction_hash' => $common_data['tx_id'],
