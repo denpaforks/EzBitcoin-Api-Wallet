@@ -663,11 +663,9 @@ class ApiController extends BaseController {
 		/* Get input addresses */
 		$addresses = array();
 		$raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $tx_id ) );
-		$raw_tx = json_decode($raw_tx, true);
 
 		foreach($raw_tx['vin'] as $input) {
 		  $input_raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $input['txid']) );
-		  $input_raw_tx = json_decode($input_raw_tx, true);
 		  $addresses[] = $input_raw_tx['vout'][$input['vout']]['scriptPubKey']['addresses'][0];
 		}
 
