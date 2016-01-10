@@ -672,7 +672,7 @@ class ApiController extends BaseController {
 		}
 
 		if( count($addresses) > 1 ) {
-			$address_from = implode(',', $address_from);
+			$address_from = implode(',', $addresses);
 		} else {
 			$address_from = $addresses[0];
 		}
