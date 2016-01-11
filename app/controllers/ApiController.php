@@ -1050,6 +1050,11 @@ class ApiController extends BaseController {
 						'note'              => 'invoice forwarding',
 						'balance'           => bcsub($transaction_model->balance, $satoshi_amount),
 					];
+
+					if( $forward_data['balance'] == 0 ) {
+						$bitcoin_amount =  $bitcoin_amount - 0.0001;
+					}
+
 					$forward_tx_id = $this->bitcoin_core->sendtoaddress( $invoice_address_model->destination_address, (float) $bitcoin_amount );
 					if ( $forward_tx_id )
 					{
