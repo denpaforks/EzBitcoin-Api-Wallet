@@ -660,26 +660,11 @@ class ApiController extends BaseController {
 
 		$transaction_details = $tx_info["details"];
 
-		/* Get input addresses */
-		$addresses = array();
-		$raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $tx_id ) );
-
-		foreach($raw_tx['vin'] as $input) {
-		  $input_raw_tx = $this->bitcoin_core->decoderawtransaction( $this->bitcoin_core->getrawtransaction( $input['txid']) );
-		  $addresses[] = $input_raw_tx['vout'][$input['vout']]['scriptPubKey']['addresses'][0];
-		}
-
-		if( count($addresses) > 1 ) {
-			$address_from = implode(',', $addresses);
-		} else {
-			$address_from = $addresses[0];
-		}
-
 		foreach ($transaction_details as $tx)
 		{
 			$to_address    = $tx['address']; // address where transaction was sent to. from address may be multiple inputs which means many addresses
 			$account_name  = $tx['account'];
-			//$address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
+			$address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
