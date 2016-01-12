@@ -883,11 +883,11 @@ class ApiController extends BaseController {
 		}
 		$this->user = User::find($user_id);
 		
+		DB::beginTransaction();
+		
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
-		$transaction_model = getTransactionByMininimumConf($min_confirmations);
-
-		DB::beginTransaction();
+		$transaction_model = Transaction::getTransactionByMinimumConf($min_confirmations);
 
 		$data = array();
 		foreach($transaction_model as $tx) {
