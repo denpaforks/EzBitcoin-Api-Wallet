@@ -882,6 +882,7 @@ class ApiController extends BaseController {
 			return Response::json( ['error' => '#blocknotify: ' . NO_USER] );
 		}
 		$this->user = User::find($user_id);
+		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
