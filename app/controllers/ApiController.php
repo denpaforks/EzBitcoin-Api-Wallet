@@ -888,14 +888,7 @@ class ApiController extends BaseController {
 		$transaction_model = Transaction::getTransactionByMinimumConf($min_confirmations);
 
 		DB::beginTransaction();
-		
-		// var_dump
-		ob_start();
-		var_dump($transaction_model);
-		$debug_dump = ob_get_clean();
-		
-		Log::info( '===TX MODEL' . $debug_dump );
-		
+
 		$data = array();
 		foreach($transaction_model as $tx) {
 			$tx_info = $this->bitcoin_core->gettransaction( $tx['tx_id'] );
