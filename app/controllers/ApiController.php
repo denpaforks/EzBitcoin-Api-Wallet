@@ -912,7 +912,8 @@ class ApiController extends BaseController {
 					Config::get( 'bitcoin.app_secret')
 			    );
 				
-				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . trim($response['app_response']) );
+				$bom = pack('H*','EFBBBF');
+				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . preg_replace("/^$bom/", '', $response['app_response']) );
 				if( $response['callback_status'] == 1 ) {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
 					Transaction::updateTxOnAppResponse( Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']) );
