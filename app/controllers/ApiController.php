@@ -898,17 +898,19 @@ class ApiController extends BaseController {
 			$common_data['block_hash'] = isset( $tx_info['blockhash'] ) ? $tx_info['blockhash'] : null;
 			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
-			if(
-				$transaction_model['callback_status'] != 1 &&
-				$transaction_model['user_id'] == $user_id &&
-				$common_data['confirmations'] >= $min_confirmations
-			) {
+			if( !$transaction_model['callback_status'] && $common_data['confirmations'] >= $min_confirmations ) {
 				$common_data['value']                  = $transaction_model['crypto_amount'];
 				$common_data['address_from']           = $transaction_model['address_from'];
 				$common_data['address_to']             = $transaction_model['address_to'];
 				$common_data['input_transaction_hash'] = $transaction_model['tx_id'];
 
-				$response = $this->sendUrl($common_data, $transaction_model['crypto_amount'], $this->user->blocknotify_callback_url, TX_CONFIRM, $secret);
+				$response = $this->sendUrl(
+				    $common_data,
+					$transaction_model['crypto_amount'],
+					$this->user->blocknotify_callback_url,
+					TX_CONFIRM,
+					Config::get( 'bitcoin.app_secret')
+			    );
 				if( $response['callback_status'] == 1 ) {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
 					Transaction::updateTxOnAppResponse( Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']) );
