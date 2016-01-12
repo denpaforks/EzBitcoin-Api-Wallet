@@ -1068,7 +1068,8 @@ class ApiController extends BaseController {
 
 			$transaction_model = Transaction::insertNewTransaction($common_data);
 
-			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount, 8 );
+			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount );
+			Log::info($total_received);
 			InvoiceAddress::updateReceived($invoice_address_model, $total_received);// update amount and mark as received
 			/* update API user balance */
 			$user_balance_updated = Balance::updateUserBalance($this->user, $satoshi_amount);
