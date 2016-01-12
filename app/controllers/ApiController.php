@@ -1062,12 +1062,11 @@ class ApiController extends BaseController {
 			// first callback, because no transaction initially found in db
 			$common_data['transaction_type'] = TX_RECEIVE_INVOICING; // new API user balance
 			$common_data['user_balance']     = bcadd($initialUserBalance->balance, $satoshi_amount);
-			//$common_data['balance']          = bcadd($invoice_address_model->balance, $satoshi_amount); // new address balance
+			$common_data['balance']          = bcadd($invoice_address_model->balance, $satoshi_amount); // new address balance
 			//$common_data['previous_balance'] = $invoice_address_model->balance; // address balance before that transaction
 			//$common_data['bitcoind_balance'] = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION, 2); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf;
 			$common_data['bitcoind_balance'] = 1000;
 			$common_data['previous_balance'] = 1000;
-			$common_data['balance'] = 1000;
 			
 			
 			$transaction_model = Transaction::insertNewTransaction($common_data);
