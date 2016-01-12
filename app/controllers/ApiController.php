@@ -897,6 +897,8 @@ class ApiController extends BaseController {
 			$data['block_hash'] = isset( $tx_info['blockhash'] ) ? $tx_info['blockhash'] : null;
 			$data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
+			Log::info( '===TX_CONFIRM' . $tx_info['confirmations'] );
+			
 			if(
 				$tx['callback_status'] != 1 &&
 				$tx['user_id'] == $user_id &&
