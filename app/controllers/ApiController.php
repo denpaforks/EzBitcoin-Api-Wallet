@@ -882,13 +882,13 @@ class ApiController extends BaseController {
 			return Response::json( ['error' => '#blocknotify: ' . NO_USER] );
 		}
 		$this->user = User::find($user_id);
-		
-		DB::beginTransaction();
-		
+
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
 		$transaction_model = Transaction::getTransactionByMinimumConf($min_confirmations);
 
+		DB::beginTransaction();
+		
 		// var_dump
 		ob_start();
 		var_dump($transaction_model);
