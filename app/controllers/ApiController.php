@@ -907,8 +907,8 @@ class ApiController extends BaseController {
 				$response = $this->sendUrl(
 				    $common_data,
 					$transaction_model['crypto_amount'],
-					$this->user->blocknotify_callback_url,
 					TX_CONFIRM,
+					$this->user->blocknotify_callback_url,
 					Config::get( 'bitcoin.app_secret')
 			    );
 				if( $response['callback_status'] == 1 ) {
