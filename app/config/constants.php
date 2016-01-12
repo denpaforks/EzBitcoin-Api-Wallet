@@ -22,5 +22,6 @@ define('TX_SEND', 'sent');
 define('TX_RECEIVE', 'received');
 define('TX_RECEIVE_INVOICING', 'received-invoice');
 define('TX_INVOICE', 'invoice');
+define('TX_CONFIRM', 'confirm');
 define('TX_API_USER', 'api-user');
 define('TX_UNREGISTERED_ADDRESS', 'unregistered address');

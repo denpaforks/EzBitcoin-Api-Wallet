@@ -886,32 +886,32 @@ class ApiController extends BaseController {
 
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
-		$transaction_model = Transaction::getTransactionByMinimumConf($min_confirmations);
+		$transaction_collection = Transaction::getTransactionByMinimumConfAndUser($user_id, $min_confirmations);
 
 		DB::beginTransaction();
 
-		$data = array();
-		foreach($transaction_model as $tx) {
-			$tx_info = $this->bitcoin_core->gettransaction( $tx['tx_id'] );
+		$common_data = array();
+		foreach($transaction_collection as $transaction_model) {
+			$tx_info = $this->bitcoin_core->gettransaction( $transaction_model['tx_id'] );
 
-			$data['confirmations'] = $tx_info['confirmations'];
-			$data['block_hash'] = isset( $tx_info['blockhash'] ) ? $tx_info['blockhash'] : null;
-			$data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
+			$common_data['confirmations'] = $tx_info['confirmations'];
+			$common_data['block_hash'] = isset( $tx_info['blockhash'] ) ? $tx_info['blockhash'] : null;
+			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
-			Log::info( '===TX_CONFIRM' . $tx_info['confirmations'] );
-			
 			if(
 				$tx['callback_status'] != 1 &&
 				$tx['user_id'] == $user_id &&
-				$data['confirmations'] >= $min_confirmations
+				$common_data['confirmations'] >= $min_confirmations
 			) {
-				$full_callback_url = $this->user->blocknotify_callback_url . '?txid=' . $tx['tx_id'] . '&confirmations=' . $data['confirmations'];
-				$full_callback_url_with_secret = $full_callback_url . "&secret=" . $this->user->secret; // don't include secret in a log
-				$app_response                  = $this->dataParser->fetchUrl( $full_callback_url_with_secret );
-				
-				if($app_response = '*ok*') {
-					Transaction::updateTxConfirmation($tx, $data);
-					Transaction::updateTxOnAppResponse($tx, $app_response, $full_callback_url, /* callback_status */ 1);
+				$common_data['value']                  = $transaction_model['crypto_amount'];
+				$common_data['address_from']           = $transaction_model['address_from'];
+				$common_data['address_to']             = $transaction_model['address_to'];
+				$common_data['input_transaction_hash'] = $transaction_model['tx_id'];
+
+				$response = $this->sendUrl($common_data, $transaction_model['crypto_amount'], $this->user->blocknotify_callback_url, TX_CONFIRM, $secret);
+				if( $response['callback_status'] == 1 ) {
+					Transaction::updateTxConfirmation($transaction_model, $common_data);
+					Transaction::updateTxOnAppResponse( Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']) );
 				} else {
 					Log::error( '#blocknotify: Couldn\'t fetch callback.' );
 					return Response::json( ['error' => '#blocknotify: Couldn\'t fetch callback.'] );
