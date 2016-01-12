@@ -1292,7 +1292,7 @@ class ApiController extends BaseController {
 		// TODO wrap in exception - means the host did not respond
 		$bom = pack('H*','EFBBBF');
 		$app_response = $this->dataParser->fetchUrl( $full_callback_url_with_secret );
-		$app_response = preg_replace("/^$bom/", '', $response['app_response']);
+		$app_response = preg_replace("/^$bom/", '', $app_response['app_response']);
 		
 
 		$callback_status = false;
