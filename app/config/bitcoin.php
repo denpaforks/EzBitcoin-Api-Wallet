@@ -5,4 +5,5 @@ return array(
 	'callback_secret' => $_ENV['CALLBACK_SECRET'],
 	'app_secret' => $_ENV['APP_SECRET'],
 	'private_invoicing' => $_ENV['PRIVATE_INVOICING'],
+	'min_confirmations' => $_ENV['MIN_CONFIRMATIONS'],
 );
