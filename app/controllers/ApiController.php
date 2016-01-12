@@ -1068,8 +1068,8 @@ class ApiController extends BaseController {
 			ob_start();
 			var_dump($common_data);
 			$result = ob_get_clean();
-			Log::info( );
-			$transaction_model = Transaction::insertNewTransaction($result);
+			Log::info( $result );
+			$transaction_model = Transaction::insertNewTransaction($common_data);
 
 			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount );
 			InvoiceAddress::updateReceived($invoice_address_model, $total_received);// update amount and mark as received
