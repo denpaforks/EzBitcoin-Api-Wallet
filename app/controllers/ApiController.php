@@ -899,8 +899,8 @@ class ApiController extends BaseController {
 			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
 			if(
-				$tx['callback_status'] != 1 &&
-				$tx['user_id'] == $user_id &&
+				$transaction_model['callback_status'] != 1 &&
+				$transaction_model['user_id'] == $user_id &&
 				$common_data['confirmations'] >= $min_confirmations
 			) {
 				$common_data['value']                  = $transaction_model['crypto_amount'];
