@@ -665,7 +665,7 @@ class ApiController extends BaseController {
 		$raw_tx = $this->bitcoin_core->getrawtransaction( $tx_id, 1 );
 
 		foreach($raw_tx['vin'] as $i) {
-			$i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid']);
+			$i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid'], 1 );
 			$addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
 		}
 
