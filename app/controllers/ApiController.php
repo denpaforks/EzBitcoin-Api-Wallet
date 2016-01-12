@@ -902,7 +902,7 @@ class ApiController extends BaseController {
 				$common_data['value']                  = $transaction_model['crypto_amount'];
 				$common_data['address_from']           = $transaction_model['address_from'];
 				$common_data['address_to']             = $transaction_model['address_to'];
-				$common_data['tx_id'] = $transaction_model['tx_id'];
+				$common_data['tx_id']                  = $transaction_model['tx_id'];
 
 				$response = $this->sendUrl(
 				    $common_data,
