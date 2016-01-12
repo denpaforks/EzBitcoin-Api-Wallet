@@ -889,7 +889,12 @@ class ApiController extends BaseController {
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
 		$transaction_model = Transaction::getTransactionByMinimumConf($min_confirmations);
 
-		Log::info( '===TX MODEL' . var_export($transaction_model, true) );
+		// var_dump
+		ob_start();
+		var_dump($transaction_model);
+		$debug_dump = ob_get_clean();
+		
+		Log::info( '===TX MODEL' . $debug_dump );
 		
 		$data = array();
 		foreach($transaction_model as $tx) {
