@@ -592,7 +592,6 @@ class ApiController extends BaseController {
 		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 		$unspent = $this->bitcoin_core->listunspent( $min_confirms );
 		return Response::json($unspent);
-		return Response::json($unspent);
 	}
 
 	/**
@@ -943,7 +942,7 @@ class ApiController extends BaseController {
 			PayoutHistory::insertNewTransaction( [
 				'user_id'        => $user_id,
 				'tx_id'          => $tx_id,
-				'crypto_amount'  => bcmul( $btc_amount, SATOSHIS_FRACTION ),
+				'crypto_amount'  => bcmul( $btc_amount, SATOSHIS_FRACTION, 8 ),
 				'crypto_type_id' => $this->crypto_type_id,
 				'address_to'     => $to_address,
 				'confirmations'  => $confirms,
