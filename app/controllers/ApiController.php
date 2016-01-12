@@ -1263,7 +1263,7 @@ class ApiController extends BaseController {
 			$common_data['note']             = TX_UNREGISTERED_ADDRESS;
 			$common_data['user_balance']     = bcadd( $initialUserBalance, $satoshi_amount ); // new API user balance
 			$common_data['previous_balance'] = $initialUserBalance->balance; // API user balance before that transaction, because user balance has not been updated yet
-			$common_data['bitcoind_balance'] = bcmul( $this->bitcoin_core->getbalance(), SATOSHIS_FRACTION ); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf
+			$common_data['bitcoind_balance'] = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf
 
 			// insert new transaction anyway
 			Transaction::insertNewTransaction( $common_data );
