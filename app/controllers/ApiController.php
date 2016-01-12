@@ -665,8 +665,8 @@ class ApiController extends BaseController {
 		$raw_tx = $this->bitcoin_core->getrawtransaction( $tx_id, 1 );
 
 		foreach($raw_tx['vin'] as $i) {
-		  $i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid']);
-		  $addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
+			$i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid']);
+			$addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
 		}
 
 		if( count($addresses) > 1 ) {
@@ -1035,7 +1035,27 @@ class ApiController extends BaseController {
 			/* update API user balance */
 			$user_balance_updated = Balance::updateUserBalance($this->user, $satoshi_amount);
 
-			// check if needs to be forwarded
+			// add data that is specific to invoice address
+			$common_data['transaction_hash'] = $forward_tx_id;
+			$common_data['destination_address'] = $invoice_address_model->destination_address;
+
+			$response = $this->sendUrl(
+				$common_data,
+				$satoshi_amount,
+				TX_INVOICE,
+				$invoice_address_model->callback_url,
+				Config::get( 'bitcoin.app_secret')
+			);
+
+			// if we get back an *ok* from the script then update the transactions status
+			Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id'] );
+		}
+		else
+		{
+			/* bitcoind sent 2nd callback for the transaction which is 1st confirmation
+			 * no need to shoot to the application, since application is updating first confirmation anyway on block-notify */
+
+			// check if needs to be forwarded here, because transaction needs to have at least 1 conf
 			if ( $invoice_address_model->forward == 1 )
 			{
 				$bitcoin_amount = bcdiv( $satoshi_amount, SATOSHIS_FRACTION, 8 ); // division
@@ -1084,25 +1104,6 @@ class ApiController extends BaseController {
 				}
 			}
 
-			// add data that is specific to invoice address
-			$common_data['transaction_hash'] = $forward_tx_id;
-			$common_data['destination_address'] = $invoice_address_model->destination_address;
-
-			$response = $this->sendUrl(
-				$common_data,
-				$satoshi_amount,
-				TX_INVOICE,
-				$invoice_address_model->callback_url,
-				Config::get( 'bitcoin.app_secret')
-			);
-
-			// if we get back an *ok* from the script then update the transactions status
-			Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id'] );
-		}
-		else
-		{
-			/* bitcoind sent 2nd callback for the transaction which is 1st confirmation
-			 * no need to shoot to the application, since application is updating first confirmation anyway on block-notify */
 			Transaction::updateTxConfirmation( $transaction_model, $common_data );
 		}
 
