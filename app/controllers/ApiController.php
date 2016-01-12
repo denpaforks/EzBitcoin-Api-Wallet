@@ -1066,7 +1066,7 @@ class ApiController extends BaseController {
 			$common_data['previous_balance'] = $invoice_address_model->balance; // address balance before that transaction
 			$common_data['bitcoind_balance'] = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf;
 
-			Log::info( print_r($result, true) );
+			Log::info( print_r($common_data, true) );
 			$transaction_model = Transaction::insertNewTransaction($common_data);
 
 			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount );
