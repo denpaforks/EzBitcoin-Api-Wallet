@@ -669,17 +669,11 @@ class ApiController extends BaseController {
 			$addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
 		}
 
-		if( count($addresses) > 1 ) {
-			$address_from = implode(',', $addresses);
-		} else {
-			$address_from = $addresses[0];
-		}
-
 		foreach ($transaction_details as $tx)
 		{
 			$to_address    = $tx['address']; // address where transaction was sent to. from address may be multiple inputs which means many addresses
 			$account_name  = $tx['account'];
-			// $address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
+			$address_from  = $addresses[0];
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
@@ -1065,7 +1059,7 @@ class ApiController extends BaseController {
 			$common_data['balance']          = bcadd($invoice_address_model->balance, $satoshi_amount); // new address balance
 			$common_data['previous_balance'] = $invoice_address_model->balance; // address balance before that transaction
 			$common_data['bitcoind_balance'] = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf;
-			
+
 			$transaction_model = Transaction::insertNewTransaction($common_data);
 
 			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount );
@@ -1293,7 +1287,7 @@ class ApiController extends BaseController {
 		$bom = pack('H*','EFBBBF');
 		$app_response = $this->dataParser->fetchUrl( $full_callback_url_with_secret );
 		$app_response = preg_replace("/^$bom/", '', $app_response);
-		
+
 
 		$callback_status = false;
 		$external_user_id = null;
