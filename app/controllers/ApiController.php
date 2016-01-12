@@ -660,11 +660,26 @@ class ApiController extends BaseController {
 
 		$transaction_details = $tx_info["details"];
 
+		/* Get input addresses */
+		$addresses = array();
+		$raw_tx = $this->bitcoin_core->getrawtransaction( $tx_id, 1 );
+
+		foreach($raw_tx['vin'] as $i) {
+		  $i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid']);
+		  $addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
+		}
+
+		if( count($addresses) > 1 ) {
+			$address_from = implode(',', $addresses);
+		} else {
+			$address_from = $addresses[0];
+		}
+
 		foreach ($transaction_details as $tx)
 		{
 			$to_address    = $tx['address']; // address where transaction was sent to. from address may be multiple inputs which means many addresses
 			$account_name  = $tx['account'];
-			$address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
+			// $address_from  = ''; //always blank as there is no way to know where bitcoin comes from UNLESS we do get rawtransaction... done and done
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
@@ -787,6 +802,7 @@ class ApiController extends BaseController {
 		{
 			$this->user = User::find(1); // because its not private, then in API server its by default first user
 		}
+
 
 		$receiving_address = Input::get( 'address' );
 		$receiving_address = isset( $receiving_address ) ? $receiving_address : '';
@@ -1037,7 +1053,7 @@ class ApiController extends BaseController {
 					];
 
 					if( $forward_data['balance'] == 0 ) {
-						$bitcoin_amount =  $bitcoin_amount - 0.0001;
+						$bitcoin_amount =  bcsub($bitcoin_amount, 0.0001, 8);
 					}
 
 					$forward_tx_id = $this->bitcoin_core->sendtoaddress( $invoice_address_model->destination_address, (float) $bitcoin_amount );
