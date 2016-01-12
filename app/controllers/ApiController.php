@@ -592,6 +592,7 @@ class ApiController extends BaseController {
 		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 		$unspent = $this->bitcoin_core->listunspent( $min_confirms );
 		return Response::json($unspent);
+		return Response::json($unspent);
 	}
 
 	/**
@@ -665,7 +666,7 @@ class ApiController extends BaseController {
 		$raw_tx = $this->bitcoin_core->getrawtransaction( $tx_id, 1 );
 
 		foreach($raw_tx['vin'] as $i) {
-			$i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid'], 1);
+			$i_raw_tx = $this->bitcoin_core->getrawtransaction( $i['txid']);
 			$addresses[] = $i_raw_tx['vout'][$i['vout']]['scriptPubKey']['addresses'][0];
 		}
 
@@ -855,6 +856,7 @@ class ApiController extends BaseController {
 			'callback_url'  => $callback_url,
 		);
 
+
 		return Response::json( $response );
 	}
 
@@ -869,24 +871,53 @@ class ApiController extends BaseController {
 		}
 
 		$server_callback_secret = Config::get( 'bitcoin.callback_secret' );
-
 		if ( $server_callback_secret != Input::get( 'secret' )) {
 			Log::error( '#blocknotify: ' . SECRET_MISMATCH . ', full URL:  ' . Request::fullUrl() . ', ip address: ' . $ip_address );
 			return Response::json( ['#blocknotify: ' . SECRET_MISMATCH] );
 		}
 
 		$user_id = Input::get('userid');
+
 		if ( ! $user_id ) {
 			Log::error( '#blocknotify: ' . NO_USER );
 			return Response::json( ['error' => '#blocknotify: ' . NO_USER] );
 		}
 		$this->user = User::find($user_id);
+		
+		// Get transactions with minimum amount of confirmations required for callback.
+		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
+		$transaction_model = getTransactionByMininimumConf($min_confirmations);
 
-		// no point to add secret
-		$full_callback_url = $this->user->blocknotify_callback_url . '?blockhash=' . Input::get('blockhash') . '&host=' . gethostname();
+		DB::beginTransaction();
 
-		$full_callback_url_with_secret = $full_callback_url . "&secret=" . $this->user->secret; // don't include secret in a log
-		$app_response                  = $this->dataParser->fetchUrl( $full_callback_url_with_secret ); // TODO wrap in exception - means the host did not respond
+		$data = array();
+		foreach($transaction_model as $tx) {
+			$tx_info = $this->bitcoin_core->gettransaction( $tx['tx_id'] );
+
+			$data['confirmations'] = $tx_info['confirmations'];
+			$data['block_hash'] = isset( $tx_info['blockhash'] ) ? $tx_info['blockhash'] : null;
+			$data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
+
+			if(
+				$tx['callback_status'] != 1 &&
+				$tx['user_id'] == $user_id &&
+				$data['confirmations'] >= $min_confirmations
+			) {
+				$full_callback_url = $this->user->blocknotify_callback_url . '?txid=' . $tx['tx_id'] . '&confirmations=' . $data['confirmations'];
+				$full_callback_url_with_secret = $full_callback_url . "&secret=" . $this->user->secret; // don't include secret in a log
+				$app_response                  = $this->dataParser->fetchUrl( $full_callback_url_with_secret );
+				
+				if($app_response = '*ok*') {
+					Transaction::updateTxConfirmation($tx, $data);
+					Transaction::updateTxOnAppResponse($tx, $app_response, $full_callback_url, /* callback_status */ 1);
+				} else {
+					Log::error( '#blocknotify: Couldn\'t fetch callback.' );
+					return Response::json( ['error' => '#blocknotify: Couldn\'t fetch callback.'] );
+				}
+			}
+		}
+
+		DB::commit();
 
 		return Response::json('*ok*');
 	}
@@ -1073,7 +1104,7 @@ class ApiController extends BaseController {
 					];
 
 					if( $forward_data['balance'] == 0 ) {
-						$bitcoin_amount =  bcsub($bitcoin_amount, 0.0001, 8);
+						$bitcoin_amount = bcsub($bitcoin_amount, 0.0001, 8);
 					}
 
 					$forward_tx_id = $this->bitcoin_core->sendtoaddress( $invoice_address_model->destination_address, (float) $bitcoin_amount );
@@ -1256,7 +1287,7 @@ class ApiController extends BaseController {
 
 		$callback_status = false;
 		$external_user_id = null;
-		if ( $app_response == "*ok*" ) {
+		if ( $app_response == '*ok*' ) {
 			$callback_status = 1;
 		} else {
 			$json_response = json_decode($app_response);
@@ -1270,7 +1301,7 @@ class ApiController extends BaseController {
 			'app_response'      => $app_response,
 			'callback_status'   => $callback_status,
 			'callback_url'      => $full_callback_url,
-			'external_user_id'  => $external_user_id,
+			'external_user_id'  => $external_user_id
 		];
 	}
 
