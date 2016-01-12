@@ -915,7 +915,7 @@ class ApiController extends BaseController {
 				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . $response['app_response'] );
 				if( $response['callback_status'] == 1 ) {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
-					Transaction::updateTxOnAppResponse( Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']) );
+					Transaction::updateTxOnAppResponse($transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']);
 				} else {
 					Log::error( '#blocknotify: Couldn\'t fetch callback.' );
 					return Response::json( ['error' => '#blocknotify: Couldn\'t fetch callback.'] );
