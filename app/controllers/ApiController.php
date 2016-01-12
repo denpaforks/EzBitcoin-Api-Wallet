@@ -911,9 +911,8 @@ class ApiController extends BaseController {
 					$this->user->blocknotify_callback_url,
 					Config::get( 'bitcoin.app_secret')
 			    );
-				
-				$bom = pack('H*','EFBBBF');
-				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . preg_replace("/^$bom/", '', $response['app_response']) );
+
+				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . $response['app_response'] );
 				if( $response['callback_status'] == 1 ) {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
 					Transaction::updateTxOnAppResponse( Transaction::updateTxOnAppResponse( $transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']) );
@@ -982,6 +981,7 @@ class ApiController extends BaseController {
 		$user_valid = $this->validateUser( $guid ); // error is printed inside #validateUser function
 		if ( $user_valid['status'] == 'error' ) {
 			Log::error('User not validated. Error: ' . $user_valid['message'] . ". Arguments - GUID: $guid, method: $method, ipAddress: $ip_address. Full URL: $fullUrl");
+			return false;
 			return false;
 		}
 
@@ -1290,7 +1290,10 @@ class ApiController extends BaseController {
 		$full_callback_url_with_secret = $full_callback_url . "&secret=" . $secret; // don't include secret in a log
 
 		// TODO wrap in exception - means the host did not respond
+		$bom = pack('H*','EFBBBF');
 		$app_response = $this->dataParser->fetchUrl( $full_callback_url_with_secret );
+		$app_response = preg_replace("/^$bom/", '', $response['app_response']);
+		
 
 		$callback_status = false;
 		$external_user_id = null;
