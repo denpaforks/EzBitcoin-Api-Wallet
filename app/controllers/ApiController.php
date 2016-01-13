@@ -674,8 +674,9 @@ class ApiController extends BaseController {
 			if( !$address_model = Address::getAddress($to_address) ) {
 				$address_model = InvoiceAddress::getAddress($to_address);
 			}
-			$this->user = $address_model->user();
-			Log::info( $this->user['guid'] );
+			$this->user = User::find($address_model->user->id);
+			
+			Log::info( $address_model->user->id );
 			$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 			
 			if ( ( Input::get( 'debug' ) or API_DEBUG == true ) ) {
