@@ -16,7 +16,7 @@ class Transaction extends Eloquent {
 		return self::where('tx_id', $txId)->where('address_to', $address)->first();
 	}
 	
-	public static function getTransactionByMinimumConfAndUser($user_id, $min_confirmations) {
+	public static function getTransactionByMinimumConf($min_confirmations) {
 		return self::where('confirmations', '<', $min_confirmations)->get();
 	}
 
