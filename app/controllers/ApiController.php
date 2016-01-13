@@ -896,7 +896,7 @@ class ApiController extends BaseController {
 			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
 			if( !$transaction_model['callback_status'] && $common_data['confirmations'] >= $min_confirmations ) {
-				$user_model = $transaction_model->user();
+				$user_model = User::find($transaction_model->user->id);
 				$this->bitcoin_core->setRpcConnection($user_model->rpc_connection);
 
 				$common_data['value']                  = $transaction_model['crypto_amount'];
