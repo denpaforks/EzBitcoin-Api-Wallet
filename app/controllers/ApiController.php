@@ -670,7 +670,10 @@ class ApiController extends BaseController {
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
-			$address_model = Address::getAddress($to_address);
+			
+			if( !$address_model = Address::getAddress($to_address) ) {
+				$address_model = InvoiceAddress::getAddress($to_address);
+			}
 			$this->user = $address_model->user();
 			$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 			

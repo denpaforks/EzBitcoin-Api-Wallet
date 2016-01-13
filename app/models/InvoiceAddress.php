@@ -21,4 +21,8 @@ class InvoiceAddress extends Eloquent {
 		$invoice_address_model->save();
 	}
 
+	public function user()
+	{
+		return $this->belongsTo('User');
+	}
 }
