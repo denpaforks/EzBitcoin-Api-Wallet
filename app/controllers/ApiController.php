@@ -897,6 +897,7 @@ class ApiController extends BaseController {
 				$common_data['address_from']           = $transaction_model['address_from'];
 				$common_data['address_to']             = $transaction_model['address_to'];
 				$common_data['tx_id']                  = $transaction_model['tx_id'];
+				$common_data['network_fee']            = $transaction_model['network_fee'];
 
 				$response = $this->sendUrl(
 				    $common_data,
@@ -1105,7 +1106,7 @@ class ApiController extends BaseController {
 					];
 
 					if( $forward_data['balance'] == 0 ) {
-						$bitcoin_amount = bcsub($bitcoin_amount, 0.0001, 8);
+						$bitcoin_amount = bcsub($bitcoin_amount, 0.00005, 8);
 					}
 
 					$forward_tx_id = $this->bitcoin_core->sendtoaddress( $invoice_address_model->destination_address, (float) $bitcoin_amount );
@@ -1272,6 +1273,7 @@ class ApiController extends BaseController {
 		 * mind the secret here, that app has to verify that it is coming from the API server not somebody else */
 		$queryString = http_build_query([
 			'value'                  => $satoshi_amount,
+			'fee'                    => $common_data['network_fee'],
 			'address_from'           => $common_data['address_from'],
 			'input_address'          => $common_data['address_to'],
 			'confirmations'          => $common_data['confirmations'],
