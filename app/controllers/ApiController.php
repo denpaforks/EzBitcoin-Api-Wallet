@@ -633,8 +633,6 @@ class ApiController extends BaseController {
 		}
 		$this->user = User::find($user_id);
 
-		$bitcoind_timestamp = Input::get( 'time' );
-
 		// TODO if user is not set here. decide how to set user
 		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 
@@ -672,6 +670,10 @@ class ApiController extends BaseController {
 			$category      = $tx['category'];
 			$btc_amount    = $tx["amount"];
 
+			$address_model = Address::getAddress($to_address);
+			$this->user = $address_model->user();
+			$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
+			
 			if ( ( Input::get( 'debug' ) or API_DEBUG == true ) ) {
 				$this->print_debug( $tx_id, $tx_info, $block_hash, $block_index, $block_time, $account_name, $to_address, $category, $btc_amount );
 			}
@@ -870,8 +872,9 @@ class ApiController extends BaseController {
 			Log::error( '#blocknotify: ' . NO_USER );
 			return Response::json( ['error' => '#blocknotify: ' . NO_USER] );
 		}
+		
 		$this->user = User::find($user_id);
-		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
+		
 
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
@@ -888,6 +891,9 @@ class ApiController extends BaseController {
 			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
 			if( !$transaction_model['callback_status'] && $common_data['confirmations'] >= $min_confirmations ) {
+				$user_model = $transaction_model->user();
+				$this->bitcoin_core->setRpcConnection($user_model->rpc_connection);
+
 				$common_data['value']                  = $transaction_model['crypto_amount'];
 				$common_data['address_from']           = $transaction_model['address_from'];
 				$common_data['address_to']             = $transaction_model['address_to'];
@@ -898,11 +904,11 @@ class ApiController extends BaseController {
 				    $common_data,
 					$transaction_model['crypto_amount'],
 					TX_CONFIRM,
-					$this->user->blocknotify_callback_url,
+					$user_model->blocknotify_callback_url,
 					Config::get( 'bitcoin.app_secret')
 			    );
 
-				Log::info( '=== BLOCK NOTIFY. Called ' .  $this->user->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . $response['app_response'] );
+				Log::info( '=== BLOCK NOTIFY. Called ' .  $user_model->blocknotify_callback_url . ' with result ' . $response['callback_status'] . '-' . $response['app_response'] );
 				if( $response['callback_status'] == 1 ) {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
 					Transaction::updateTxOnAppResponse($transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']);
