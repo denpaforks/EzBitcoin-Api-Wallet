@@ -276,15 +276,10 @@ class ApiController extends BaseController {
 			return Response::json( ['error' => AUTHENTICATION_FAIL] );
 		}
 
-		$to_address = Input::get( 'to' );
-		$amount_satoshi     = Input::get( 'amount' );
-//		$note       = Input::get( 'note' );
-		$note       = '';
-		$external_user_id = Input::get( 'external_user_id', null );
-
-		if ( ! $note ) {
-			$note = '';
-		}
+		$to_address       = Input::get('to');
+		$amount_satoshi   = Input::get('amount');
+		$note             = '';
+		$external_user_id = Input::get('external_user_id', null);
 
 		Log::info( "=== PAYMENT to $to_address, note: $note, amount: " . self::satoshiToBtc( $amount_satoshi ) );
 
@@ -1066,7 +1061,7 @@ class ApiController extends BaseController {
 			$total_received = bcadd( $invoice_address_model->received_amount, $satoshi_amount );
 			InvoiceAddress::updateReceived($invoice_address_model, $total_received);// update amount and mark as received
 			/* update API user balance */
-			$user_balance_updated = Balance::updateUserBalance($this->user, $satoshi_amount);
+			$user_balance_updated = Balance::updateUserBalance($this->user, '+', $satoshi_amount);
 
 			// add data that is specific to invoice address
 			$common_data['transaction_hash'] = $forward_tx_id;
@@ -1116,7 +1111,7 @@ class ApiController extends BaseController {
 						$forward_data['previous_balance']  = $transaction_model->balance;
 						$forward_data['bitcoind_balance']  = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION);
 						Transaction::insertNewTransaction($forward_data);
-						Balance::updateUserBalance($this->user, $satoshi_amount);
+						Balance::updateUserBalance($this->user, '-', $satoshi_amount);
 						Log::info( 'Forwarded ' . $bitcoin_amount . ' bitcoins to ' . $common_data['address_to'] );
 					} // TODO fucked when sendtoaddress throws exception, should send to server still the response.
 				}
@@ -1174,7 +1169,7 @@ class ApiController extends BaseController {
 			Address::updateBalance($address_model, $satoshi_amount);
 
 			/* update API user balance */
-			Balance::updateUserBalance($this->user, $satoshi_amount);
+			Balance::updateUserBalance($this->user, '+', $satoshi_amount);
 
 			/* send to to application the response! */
 			$response = $this->sendUrl(

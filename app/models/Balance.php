@@ -20,11 +20,11 @@ class Balance extends Eloquent {
 		return $user_balance;
 	}
 
-	public static function updateUserBalance($user, $amount_to_add, $crypto_type_id = 1) {
+	public static function updateUserBalance($user, $action, $amount_to_add, $crypto_type_id = 1) {
 		$balance = self::getBalance($user->id, $crypto_type_id);
-		$new_balance = bcadd($balance->balance, $amount_to_add);
+		$new_balance = ($action == '+') ? bcadd($balance->balance, $amount_to_add) : bcsub($balance->balance, $amount_to_add);
 		$balance->balance = $new_balance;
-		$balance->total_received = bcadd($balance->total_recieved, $amount_to_add);
+		$balance->total_received = ($action == '+') ? bcadd($balance->total_recieved, $amount_to_add) : '';
 		$balance->num_transactions = bcadd($balance->num_transactions, 1);
 		$balance->save();
 		return $balance;
