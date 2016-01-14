@@ -674,9 +674,14 @@ class ApiController extends BaseController {
 			if( !$address_model = Address::getAddress($to_address) ) {
 				$address_model = InvoiceAddress::getAddress($to_address);
 			}
+			
+			if( !isset($address_model->user->id) ) {
+				Log::info('#callback: couldn\'t fetch user by address: ' . $to_address);
+				continue; // loop more in case there is something
+			}
+			
 			$this->user = User::find($address_model->user->id);
 			
-			Log::info( $address_model->user->id );
 			$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 			
 			if ( ( Input::get( 'debug' ) or API_DEBUG == true ) ) {
@@ -898,7 +903,6 @@ class ApiController extends BaseController {
 			$common_data['block_index'] = isset( $tx_info['blockindex'] ) ? $tx_info['blockindex'] : null;
 
 			if( !$transaction_model['callback_status'] && $common_data['confirmations'] >= $min_confirmations ) {
-
 				$common_data['value']                  = $transaction_model['crypto_amount'];
 				$common_data['address_from']           = $transaction_model['address_from'];
 				$common_data['address_to']             = $transaction_model['address_to'];
