@@ -922,8 +922,8 @@ class ApiController extends BaseController {
 					Transaction::updateTxConfirmation($transaction_model, $common_data);
 					Transaction::updateTxOnAppResponse($transaction_model, $response['app_response'], $response['callback_url'], $response['callback_status'], $response['external_user_id']);
 				} else {
-					Log::error( '#blocknotify: Couldn\'t fetch callback.' );
-					return Response::json( ['error' => '#blocknotify: Couldn\'t fetch callback.'] );
+					Log::info( '#blocknotify: Couldn\'t fetch callback for txid: ' . $common_data['tx_id'] );
+					continue; // loop more in case there's more transactions to go
 				}
 			}
 		}
