@@ -1124,7 +1124,7 @@ class ApiController extends BaseController {
 					{
 						$forward_data['tx_id'] = $forward_tx_id;
 						$forward_data['previous_balance']  = $transaction_model->balance;
-						$forward_data['bitcoind_balance']  = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION);
+						$forward_data['bitcoind_balance']  = round( (float)$this->bitcoin_core->getbalance(), 8 );
 						Transaction::insertNewTransaction($forward_data);
 						Balance::updateUserBalance($this->user, '-', $satoshi_amount);
 						Log::info( 'Forwarded ' . $bitcoin_amount . ' bitcoins to ' . $common_data['address_to'] );
@@ -1175,7 +1175,7 @@ class ApiController extends BaseController {
 			$common_data['balance']             = $new_address_balance;
 			$common_data['user_balance']        = bcadd($initialUserBalance->balance, $satoshi_amount);
 			$common_data['previous_balance']    = $address_model->balance;
-			$common_data['bitcoind_balance']    = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION);
+			$common_data['bitcoind_balance']    = round( (float)$this->bitcoin_core->getbalance(), 8 );
 
 			// insert new transaction
 			$transaction_model = Transaction::insertNewTransaction( $common_data );
@@ -1268,7 +1268,7 @@ class ApiController extends BaseController {
 			$common_data['note']             = TX_UNREGISTERED_ADDRESS;
 			$common_data['user_balance']     = bcadd( $initialUserBalance, $satoshi_amount ); // new API user balance
 			$common_data['previous_balance'] = $initialUserBalance->balance; // API user balance before that transaction, because user balance has not been updated yet
-			$common_data['bitcoind_balance'] = bcmul($this->bitcoin_core->getbalance(), SATOSHIS_FRACTION); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf
+			$common_data['bitcoind_balance'] = round( (float)$this->bitcoin_core->getbalance(), 8 ); // bitcoind balance on received! that means this transaction is not included, because it has 0 conf
 
 			// insert new transaction anyway
 			Transaction::insertNewTransaction( $common_data );
