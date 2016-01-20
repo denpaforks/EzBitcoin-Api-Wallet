@@ -38,7 +38,7 @@ class ApiCallback extends Command {
         public function fire()
         {
                 $request = Request::create('/api/callback', 'GET', array(
-                        'secret' => $this->option('secret'),
+                        'secret' => !$this->option('secret') ? Config::get('bitcoin.callback_secret') : $this->option('secret'),
                         'txid' => $this->option('txid'),
                 ));
                 Request::replace( $request->input() );
@@ -57,8 +57,8 @@ class ApiCallback extends Command {
         protected function getOptions()
         {
                 return array(
-                        array('secret', null, InputOption::VALUE_REQUIRED, 'Callback secret.', null),
                         array('txid', null, InputOption::VALUE_REQUIRED, 'Transaction ID.', null),
+						array('secret', null, InputOption::VALUE_OPTIONAL, 'Callback secret.', null),
 						array('debug', null, InputOption::VALUE_OPTIONAL, 'Show output.', null),
                 );
         }

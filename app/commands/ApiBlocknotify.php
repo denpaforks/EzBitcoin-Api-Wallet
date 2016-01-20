@@ -38,7 +38,7 @@ class ApiBlocknotify extends Command {
         public function fire()
         {	
                 $request = Request::create('/api/blocknotify', 'GET', array(
-                        'secret' => $this->option('secret'),
+                        'secret' => !$this->option('secret') ? Config::get('bitcoin.callback_secret') : $this->option('secret'),
                         'blockhash' => $this->option('blockhash'),
                 ));
                 Request::replace( $request->input() );
@@ -57,8 +57,8 @@ class ApiBlocknotify extends Command {
         protected function getOptions()
         {
                 return array(
-                        array('secret', null, InputOption::VALUE_REQUIRED, 'Callback secret.', null),
                         array('blockhash', null, InputOption::VALUE_REQUIRED, 'Hash of new best block.', null),
+						array('secret', null, InputOption::VALUE_OPTIONAL, 'Callback secret.', null),
 						array('debug', null, InputOption::VALUE_OPTIONAL, 'Show output.', null),
                 );
         }
