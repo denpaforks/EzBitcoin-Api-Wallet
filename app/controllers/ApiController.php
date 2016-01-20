@@ -674,7 +674,8 @@ class ApiController extends BaseController {
 				continue; // loop more in case there is something
 			}
 			
-			$this->user = User::find($address_model->user->id);
+			$user_id = $address_model->user->id;
+			$this->user = User::find($user_id);
 			
 			$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 			

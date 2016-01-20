@@ -11,4 +11,5 @@
 |
 */
 
-Artisan::add(new CallRoute);
+Artisan::add(new ApiCallback);
+Artisan::add(new ApiBlocknotify);

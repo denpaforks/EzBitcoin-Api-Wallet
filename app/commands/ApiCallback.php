@@ -4,21 +4,21 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputArgument;
 
-class CallRoute extends Command {
+class ApiCallback extends Command {
 
         /**
          * The console command name.
          *
          * @var string
          */
-        protected $name = 'route:call';
+        protected $name = 'api:callback';
 
         /**
          * The console command description.
          *
          * @var string
          */
-        protected $description = 'Call laravel from shell.';
+        protected $description = 'Call callback method from CLI.';
 
         /**
          * Create a new command instance.
@@ -37,17 +37,7 @@ class CallRoute extends Command {
          */
         public function fire()
         {
-				$cli_methods = array('/api/callback', '/api/blocknotify');
-				
-				// Normalize URI a little bit
-				$uri = '/' . ltrim( $this->option('uri'), '/' );
-				
-				if( !in_array($uri, $cli_methods ) ) {
-					$this->error('Method ' . $uri . ' is not allowed from CLI');
-					return;
-				}
-			
-                $request = Request::create($uri, 'GET', array(
+                $request = Request::create('/api/callback', 'GET', array(
                         'secret' => $this->option('secret'),
                         'txid' => $this->option('txid'),
                 ));
@@ -63,7 +53,6 @@ class CallRoute extends Command {
         protected function getOptions()
         {
                 return array(
-                        array('uri', null, InputOption::VALUE_REQUIRED, 'Route path.', null),
                         array('secret', null, InputOption::VALUE_REQUIRED, 'Callback secret.', null),
                         array('txid', null, InputOption::VALUE_REQUIRED, 'Transaction ID.', null),
                 );
