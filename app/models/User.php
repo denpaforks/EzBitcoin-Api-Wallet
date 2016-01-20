@@ -12,7 +12,7 @@ class User extends Eloquent {
 	}
 	
 	public static function getRandomRPCUser() {
-		return self::whereNotNull('rpc_connection')->random(1);
+		return self::whereNotNull('rpc_connection')->orderBy( DB::raw('RANDOM()') )->first();
 	}
 
 	public function balances() {
