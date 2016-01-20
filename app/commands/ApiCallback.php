@@ -42,7 +42,11 @@ class ApiCallback extends Command {
                         'txid' => $this->option('txid'),
                 ));
                 Request::replace( $request->input() );
-                $this->info( Route::dispatch($request)->getContent() );
+
+				$response = Route::dispatch($request)->getContent();
+                if( $this->option('debug') ) {
+					$this->info($response);
+				}
         }
 
         /**
@@ -55,6 +59,7 @@ class ApiCallback extends Command {
                 return array(
                         array('secret', null, InputOption::VALUE_REQUIRED, 'Callback secret.', null),
                         array('txid', null, InputOption::VALUE_REQUIRED, 'Transaction ID.', null),
+						array('debug', null, InputOption::VALUE_OPTIONAL, 'Show output.', null),
                 );
         }
 }

@@ -42,7 +42,11 @@ class ApiBlocknotify extends Command {
                         'blockhash' => $this->option('blockhash'),
                 ));
                 Request::replace( $request->input() );
-                $this->info( Route::dispatch($request)->getContent() );
+
+				$response = Route::dispatch($request)->getContent();
+                if( $this->option('debug') ) {
+					$this->info($response);
+				}
         }
 
         /**
@@ -55,6 +59,7 @@ class ApiBlocknotify extends Command {
                 return array(
                         array('secret', null, InputOption::VALUE_REQUIRED, 'Callback secret.', null),
                         array('blockhash', null, InputOption::VALUE_REQUIRED, 'Hash of new best block.', null),
+						array('debug', null, InputOption::VALUE_OPTIONAL, 'Show output.', null),
                 );
         }
 }
