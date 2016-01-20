@@ -10,6 +10,10 @@ class User extends Eloquent {
 	public static function getUserByGuid($guid) {
 		return self::where('guid', $guid)->first();
 	}
+	
+	public static function getRandomRPCUser() {
+		return self::whereNotNull('rpc_connection')->random(1);
+	}
 
 	public function balances() {
 		return $this->hasMany('Balance');

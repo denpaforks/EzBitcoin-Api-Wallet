@@ -598,7 +598,7 @@ class ApiController extends BaseController {
 	 */
 	public function callback()
 	{
-		Log::info('=== CALLBACK. ' . 'User id: '.Input::get('userid').', tx hash: '.Input::get('txid'));
+		Log::info('=== CALLBACK. tx hash: '. Input::get('txid'));
 
 		/* the url structure is different, so different segments of URI */
 		if ( Input::get( 'cryptotype' ) ) {
@@ -626,14 +626,8 @@ class ApiController extends BaseController {
 			return Response::json( ['error' => NO_TX_ID] );
 		}
 
-		$user_id = Input::get('userid');
-		if ( ! $user_id ) {
-			// TODO daaaaamn
-			// return here with error
-		}
-		$this->user = User::find($user_id);
-
-		// TODO if user is not set here. decide how to set user
+		// Get random user with set rpc_connection param.
+		$this->user = User::getRandomRPCUser();
 		$this->bitcoin_core->setRpcConnection($this->user->rpc_connection);
 
 		try {
@@ -862,9 +856,7 @@ class ApiController extends BaseController {
 
 	public function blocknotify()
 	{
-		Log::info( '=== BLOCK NOTIFY. ' . 'User id: '.Input::get('userid').', block hash: '.Input::get('blockhash') );
-
-		$ip_address = Request::ip();
+		Log::info( '=== BLOCK NOTIFY. block hash: ' . Input::get('blockhash') );
 
 		if ( Input::get( 'cryptotype' ) ) {
 			$this->crypto_type_id = Input::get( 'cryptotype' );
@@ -872,19 +864,9 @@ class ApiController extends BaseController {
 
 		$server_callback_secret = Config::get( 'bitcoin.callback_secret' );
 		if ( $server_callback_secret != Input::get( 'secret' )) {
-			Log::error( '#blocknotify: ' . SECRET_MISMATCH . ', full URL:  ' . Request::fullUrl() . ', ip address: ' . $ip_address );
+			Log::error( '#blocknotify: ' . SECRET_MISMATCH . ', full URL:  ' . Request::fullUrl() );
 			return Response::json( ['#blocknotify: ' . SECRET_MISMATCH] );
 		}
-
-		$user_id = Input::get('userid');
-
-		if ( ! $user_id ) {
-			Log::error( '#blocknotify: ' . NO_USER );
-			return Response::json( ['error' => '#blocknotify: ' . NO_USER] );
-		}
-		
-		$this->user = User::find($user_id);
-		
 
 		// Get transactions with minimum amount of confirmations required for callback.
 		$min_confirmations = Config::get( 'bitcoin.min_confirmations' );
